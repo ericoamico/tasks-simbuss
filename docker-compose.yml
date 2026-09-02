@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: tarefas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: adonis
+      POSTGRES_PASSWORD: adonis
+      POSTGRES_DB: tarefas
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

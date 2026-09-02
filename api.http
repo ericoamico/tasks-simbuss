@@ -1,0 +1,26 @@
+@baseUrl = http://localhost:3333
+
+### Login
+# @name login
+# @no-redirect
+POST {{baseUrl}}/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "super@mail.com",
+  "password": "supersuper"
+}
+
+### Verificar API
+# @name createTask
+# @no-redirect
+POST {{baseUrl}}/api/tasks
+Accept: application/json
+Content-Type: application/json
+
+{
+  "title": "Som de passos não toca",
+  "description": "Teste da API",
+  "type": "bug"
+}
