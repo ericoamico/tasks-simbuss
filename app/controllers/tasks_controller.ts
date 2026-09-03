@@ -54,4 +54,13 @@ export default class TasksController {
 
     return task
   }
+  async destroy({ params, auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const task = await user.related('tasks').query().where('id', params.id).firstOrFail()
+
+    await task.delete()
+
+    return response.noContent()
+  }
 }

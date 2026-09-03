@@ -36,6 +36,7 @@ router
   router.post('tasks', [controllers.Tasks, 'store'])
   router.patch('tasks/:id/status', [controllers.Tasks, 'updateStatus'])
   router.patch('tasks/:id', [controllers.Tasks, 'update'])
+  router.delete('tasks/:id', [controllers.Tasks, 'destroy'])
   })
   .prefix('/api')
   .use(middleware.auth())
