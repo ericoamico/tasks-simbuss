@@ -36,6 +36,12 @@ const routes = {
     tokens: [{"old":"/login","type":0,"val":"login","end":""}],
     types: placeholder as Registry['session.store']['types'],
   },
+  'api_sessions.store': {
+    methods: ["POST"],
+    pattern: '/api/login',
+    tokens: [{"old":"/api/login","type":0,"val":"api","end":""},{"old":"/api/login","type":0,"val":"login","end":""}],
+    types: placeholder as Registry['api_sessions.store']['types'],
+  },
   'session.destroy': {
     methods: ["POST"],
     pattern: '/logout',
@@ -71,6 +77,12 @@ const routes = {
     pattern: '/api/tasks/:id',
     tokens: [{"old":"/api/tasks/:id","type":0,"val":"api","end":""},{"old":"/api/tasks/:id","type":0,"val":"tasks","end":""},{"old":"/api/tasks/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['tasks.update']['types'],
+  },
+  'tasks.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/tasks/:id',
+    tokens: [{"old":"/api/tasks/:id","type":0,"val":"api","end":""},{"old":"/api/tasks/:id","type":0,"val":"tasks","end":""},{"old":"/api/tasks/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['tasks.destroy']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 

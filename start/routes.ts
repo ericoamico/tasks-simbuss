@@ -23,6 +23,7 @@ router
   })
   .use(middleware.guest())
 
+  router.post('api/login', [controllers.ApiSessions, 'store'])
 router
   .group(() => {
     router.post('logout', [controllers.Session, 'destroy'])
@@ -39,4 +40,4 @@ router
   router.delete('tasks/:id', [controllers.Tasks, 'destroy'])
   })
   .prefix('/api')
-  .use(middleware.auth())
+  .use(middleware.auth({guards: ['api']}))

@@ -1,16 +1,21 @@
 import { UserSchema } from '#database/schema'
 import hash from '@adonisjs/core/services/hash'
-import {hasMany} from '@adonisjs/lucid/orm'
+import { hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
-import taske from '#models/task'
+import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
+import Task from '#models/task'
+
 export default class User extends compose(UserSchema, withAuthFinder(hash)) {
-  @hasMany(() => taske)
-  declare tasks: HasMany<typeof taske>
+  static accessTokens = DbAccessTokensProvider.forModel(User)
+
+  @hasMany(() => Task)
+  declare tasks: HasMany<typeof Task>
 
   get initials() {
     const [first, last] = this.fullName ? this.fullName.split(' ') : this.email.split('@')
+
     if (first && last) {
       return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase()
     }

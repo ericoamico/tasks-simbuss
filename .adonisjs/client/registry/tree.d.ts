@@ -12,11 +12,15 @@ export interface ApiDefinition {
     store: typeof routes['session.store']
     destroy: typeof routes['session.destroy']
   }
+  apiSessions: {
+    store: typeof routes['api_sessions.store']
+  }
   tasks: {
     index: typeof routes['tasks.index']
     show: typeof routes['tasks.show']
     store: typeof routes['tasks.store']
     updateStatus: typeof routes['tasks.update_status']
     update: typeof routes['tasks.update']
+    destroy: typeof routes['tasks.destroy']
   }
 }
