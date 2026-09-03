@@ -5,9 +5,9 @@
 
 export const controllers = {
   ApiSessions: () => import('#controllers/api_sessions_controller'),
+  Home: () => import('#controllers/home_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
   Session: () => import('#controllers/session_controller'),
   Tasks: () => import('#controllers/tasks_controller'),
-  Home: () => import('#controllers/home_controller'),
   WebTasks: () => import('#controllers/web_tasks_controller'),
 }
