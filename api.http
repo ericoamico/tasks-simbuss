@@ -8,8 +8,8 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "email": "ssuper@mail.com",
-  "password": "supersuper"
+  "email": "erico@mail.com",
+  "password": "ericoerico"
 }
 
 

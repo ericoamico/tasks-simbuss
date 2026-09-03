@@ -11,8 +11,14 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 
-router.on('/').renderInertia('home', {}).as('home')
+router
+  .get('/', [controllers.Home, 'index'])
+  .as('home')
+  .use(middleware.auth())
 
+  router
+  .post('/tasks', [controllers.WebTasks, 'store'])
+  .use(middleware.auth())
 router
   .group(() => {
     router.get('signup', [controllers.NewAccount, 'create'])
