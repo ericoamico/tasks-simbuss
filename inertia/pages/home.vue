@@ -29,7 +29,7 @@ function createTask() {
 </script>
 
 <template>
-  <Head title="Tarefas" />
+  <Head title="Chamados" />
 
   <div>
     <header>

@@ -7,10 +7,10 @@ import { TuyauProvider } from '@adonisjs/inertia/vue'
 import { createApp, type DefineComponent, h } from 'vue'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 
-const appName = import.meta.env.VITE_APP_NAME || 'AdonisJS'
+const appName = 'Gestão de Tarefas — Simbuss'
 
 createInertiaApp({
-  title: (title) => (title ? `${title} - ${appName}` : appName),
+  title: (title) => (title ? `${title} | ${appName}` : appName),
   resolve: (name) => {
     return resolvePageComponent(
       `./pages/${name}.vue`,
