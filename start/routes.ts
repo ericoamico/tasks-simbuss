@@ -13,7 +13,14 @@ import router from '@adonisjs/core/services/router'
 
 router.get('/', [controllers.Home, 'index']).as('home').use(middleware.auth())
 
-router.post('/tasks', [controllers.WebTasks, 'store']).use(middleware.auth())
+router
+  .group(() => {
+    router.post('/tasks', [controllers.WebTasks, 'store'])
+    router.patch('/tasks/:id/status', [controllers.WebTasks, 'updateStatus'])
+    router.patch('/tasks/:id', [controllers.WebTasks, 'update'])
+    router.delete('/tasks/:id', [controllers.WebTasks, 'destroy'])
+  })
+  .use(middleware.auth())
 router
   .group(() => {
     router.get('signup', [controllers.NewAccount, 'create']).as('new_account.create')

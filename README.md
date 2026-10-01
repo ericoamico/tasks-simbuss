@@ -24,6 +24,12 @@ npm run dev
 
 Abra http://localhost:3333/signup para criar sua conta. Para desenvolver sem PostgreSQL, configure `DB_CONNECTION=sqlite` no `.env` antes de executar as migrações. O banco SQLite fica em `tmp/db.sqlite3`. Não alterne a conexão sobre dados de produção.
 
+## Frontend
+
+A página principal permite criar chamados, consultar título e descrição, editar título/descrição/tipo, alterar o status e excluir com confirmação. Os tipos e status aparecem em português. A edição recebe foco no campo título; cancelar devolve o foco ao botão, e excluir devolve o foco ao título da lista. As mensagens de resultado são anunciadas por leitores de tela.
+
+As rotas web usam sessão e CSRF e limitam as operações aos chamados do usuário autenticado.
+
 ## API
 
 Crie a conta pelo frontend e envie `POST /api/login` com JSON contendo `email` e `password`. Use o `token` retornado no cabeçalho `Authorization: Bearer TOKEN` e `Accept: application/json` nas demais chamadas:

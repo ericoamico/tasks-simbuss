@@ -93,9 +93,9 @@ test.group('API and web tasks', (group) => {
   })
   test('creates an account, creates a web task, logs out and logs back in', async ({ assert }) => {
     const cookies = new Map<string, string>()
-    async function web(path: string, body?: object) {
+    async function web(path: string, body?: object, method = body ? 'POST' : 'GET') {
       const response = await fetch(`${baseUrl}${path}`, {
-        method: body ? 'POST' : 'GET',
+        method,
         redirect: 'manual',
         headers: {
           'Accept': 'text/html',
@@ -135,6 +135,39 @@ test.group('API and web tasks', (group) => {
     const home = await web('/')
     assert.equal(home.status, 200)
     assert.include(await home.text(), 'Browser task')
+
+    const other = await User.create({ email: 'foreign-web@example.com', password: 'password123' })
+    const foreign = await other
+      .related('tasks')
+      .create({ title: 'Private', description: 'Private', type: 'bug', status: 'open' })
+    for (const [path, method, body] of [
+      [`/tasks/${foreign.id}`, 'PATCH', { title: 'Forbidden' }],
+      [`/tasks/${foreign.id}/status`, 'PATCH', { status: 'finished' }],
+      [`/tasks/${foreign.id}`, 'DELETE', {}],
+    ] as const) {
+      const forbidden = await web(path, body, method)
+      assert.equal(forbidden.status, 404)
+    }
+    const updated = await web(
+      `/tasks/${task.id}`,
+      { title: 'Updated web task', description: 'Edited', type: 'suggestion' },
+      'PATCH'
+    )
+    assert.equal(updated.status, 302)
+    await task.refresh()
+    assert.equal(task.title, 'Updated web task')
+    assert.equal(task.type, 'suggestion')
+    const invalidStatus = await web(`/tasks/${task.id}/status`, { status: 'invalid' }, 'PATCH')
+    assert.equal(invalidStatus.status, 302)
+    await task.refresh()
+    assert.equal(task.status, 'open')
+    const changedStatus = await web(`/tasks/${task.id}/status`, { status: 'finished' }, 'PATCH')
+    assert.equal(changedStatus.status, 302)
+    await task.refresh()
+    assert.equal(task.status, 'finished')
+    const deleted = await web(`/tasks/${task.id}`, {}, 'DELETE')
+    assert.equal(deleted.status, 302)
+    assert.isNull(await user.related('tasks').query().where('id', task.id).first())
     const logout = await web('/logout', {})
     assert.equal(logout.headers.get('location'), '/login')
     await web('/login')

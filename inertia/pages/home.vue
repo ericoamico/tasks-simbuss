@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { nextTick, ref } from 'vue'
+import TaskCard from '~/components/task_card.vue'
 import { Head, useForm } from '@inertiajs/vue3'
 
 type Task = {
@@ -19,10 +21,19 @@ const form = useForm({
   type: 'general' as 'bug' | 'suggestion' | 'general',
 })
 
+const listHeading = ref<HTMLHeadingElement>()
+const message = ref('')
+async function afterDelete() {
+  message.value = 'Chamado excluído com sucesso.'
+  await nextTick()
+  listHeading.value?.focus()
+}
+
 function createTask() {
   form.post('/tasks', {
     onSuccess: () => {
       form.reset()
+      message.value = 'Chamado criado com sucesso.'
     },
   })
 }
@@ -31,9 +42,10 @@ function createTask() {
 <template>
   <Head title="Chamados" />
 
-  <div>
+  <div class="tasks-page">
+    <p role="status" aria-live="polite">{{ message }}</p>
     <header>
-      <h1>Tarefas</h1>
+      <h1>Chamados Simbuss</h1>
 
       <p>Organize bugs, sugestões e tarefas gerais do projeto.</p>
     </header>
@@ -101,29 +113,13 @@ function createTask() {
     </section>
 
     <section aria-labelledby="tasks-title">
-      <h2 id="tasks-title">Minhas tarefas</h2>
+      <h2 id="tasks-title" ref="listHeading" tabindex="-1">Meus chamados</h2>
 
       <p v-if="tasks.length === 0">Nenhuma tarefa cadastrada.</p>
 
       <ul v-else>
         <li v-for="task in tasks" :key="task.id">
-          <article>
-            <h3>{{ task.title }}</h3>
-
-            <p>{{ task.description }}</p>
-
-            <dl>
-              <div>
-                <dt>Tipo</dt>
-                <dd>{{ task.type }}</dd>
-              </div>
-
-              <div>
-                <dt>Status</dt>
-                <dd>{{ task.status }}</dd>
-              </div>
-            </dl>
-          </article>
+          <TaskCard :task="task" @deleted="afterDelete" />
         </li>
       </ul>
     </section>

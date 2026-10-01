@@ -234,3 +234,77 @@ button:hover {
     transform: scale(1);
   }
 }
+
+/* Chamados */
+.tasks-page {
+  padding: 24px;
+}
+.tasks-page > section {
+  margin-top: 32px;
+}
+.tasks-page ul {
+  list-style: none;
+  display: grid;
+  gap: 20px;
+  margin-top: 16px;
+}
+.task-card {
+  border: 1px solid var(--gray-4);
+  border-radius: 8px;
+  padding: 20px;
+}
+.task-card form,
+.task-card section {
+  margin-top: 16px;
+}
+.task-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.task-card dl {
+  display: flex;
+  gap: 24px;
+  margin: 12px 0;
+}
+.task-card dt {
+  font-weight: 600;
+}
+.task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.task-actions button {
+  width: auto;
+}
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--gray-4);
+  border-radius: 4px;
+  font: inherit;
+}
+textarea {
+  min-height: 110px;
+}
+[aria-invalid='true'] {
+  border-color: #b91c1c;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .tasks-page {
+    padding: 16px;
+  }
+  main {
+    margin: 0 8px;
+  }
+}
