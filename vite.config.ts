@@ -5,7 +5,11 @@ import adonisjs from '@adonisjs/vite/client'
 export default defineConfig({
   plugins: [
     vue(),
-    adonisjs({ entryPoints: ['inertia/app.ts'], reload: ['resources/views/**/*.edge'] }),
+    adonisjs({
+      entrypoints: ['inertia/app.ts'],
+      serverEntrypoints: ['inertia/ssr.ts'],
+      reload: ['resources/views/**/*.edge'],
+    }),
   ],
 
   resolve: {
