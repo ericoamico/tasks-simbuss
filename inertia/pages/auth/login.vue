@@ -18,9 +18,11 @@ import { Form } from '@adonisjs/inertia/vue'
             type="email"
             name="email"
             autocomplete="username"
-            :data-invalid="errors.email ? 'true' : undefined"
+            :aria-invalid="errors.email ? 'true' : undefined"
+            :aria-describedby="errors.email ? 'email-error' : undefined"
+            required
           />
-          <div v-if="errors.email">{{ errors.email }}</div>
+          <div v-if="errors.email" id="email-error" role="alert">{{ errors.email }}</div>
         </div>
 
         <div>
@@ -30,9 +32,11 @@ import { Form } from '@adonisjs/inertia/vue'
             type="password"
             name="password"
             autocomplete="current-password"
-            :data-invalid="errors.password ? 'true' : undefined"
+            :aria-invalid="errors.password ? 'true' : undefined"
+            :aria-describedby="errors.password ? 'password-error' : undefined"
+            required
           />
-          <div v-if="errors.password">{{ errors.password }}</div>
+          <div v-if="errors.password" id="password-error" role="alert">{{ errors.password }}</div>
         </div>
 
         <div>

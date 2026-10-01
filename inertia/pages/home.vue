@@ -6,7 +6,7 @@ type Task = {
   title: string
   description: string
   type: 'bug' | 'suggestion' | 'general'
-  status: 'open' | 'in_progress' | 'finished'
+  status: 'open' | 'in_progress' | 'finished' | 'closed'
 }
 
 defineProps<{
@@ -31,13 +31,11 @@ function createTask() {
 <template>
   <Head title="Tarefas" />
 
-  <main>
+  <div>
     <header>
       <h1>Tarefas</h1>
 
-      <p>
-        Organize bugs, sugestões e tarefas gerais do projeto.
-      </p>
+      <p>Organize bugs, sugestões e tarefas gerais do projeto.</p>
     </header>
 
     <section aria-labelledby="new-task-title">
@@ -50,11 +48,13 @@ function createTask() {
           <input
             id="task-title"
             v-model="form.title"
+            :aria-invalid="form.errors.title ? 'true' : undefined"
+            :aria-describedby="form.errors.title ? 'task-title-error' : undefined"
             type="text"
             required
           />
 
-          <p v-if="form.errors.title">
+          <p v-if="form.errors.title" id="task-title-error" role="alert">
             {{ form.errors.title }}
           </p>
         </div>
@@ -65,10 +65,12 @@ function createTask() {
           <textarea
             id="task-description"
             v-model="form.description"
+            :aria-invalid="form.errors.description ? 'true' : undefined"
+            :aria-describedby="form.errors.description ? 'task-description-error' : undefined"
             required
           ></textarea>
 
-          <p v-if="form.errors.description">
+          <p v-if="form.errors.description" id="task-description-error" role="alert">
             {{ form.errors.description }}
           </p>
         </div>
@@ -79,13 +81,15 @@ function createTask() {
           <select
             id="task-type"
             v-model="form.type"
+            :aria-invalid="form.errors.type ? 'true' : undefined"
+            :aria-describedby="form.errors.type ? 'task-type-error' : undefined"
           >
             <option value="general">Geral</option>
             <option value="bug">Bug</option>
             <option value="suggestion">Sugestão</option>
           </select>
 
-          <p v-if="form.errors.type">
+          <p v-if="form.errors.type" id="task-type-error" role="alert">
             {{ form.errors.type }}
           </p>
         </div>
@@ -99,15 +103,10 @@ function createTask() {
     <section aria-labelledby="tasks-title">
       <h2 id="tasks-title">Minhas tarefas</h2>
 
-      <p v-if="tasks.length === 0">
-        Nenhuma tarefa cadastrada.
-      </p>
+      <p v-if="tasks.length === 0">Nenhuma tarefa cadastrada.</p>
 
       <ul v-else>
-        <li
-          v-for="task in tasks"
-          :key="task.id"
-        >
+        <li v-for="task in tasks" :key="task.id">
           <article>
             <h3>{{ task.title }}</h3>
 
@@ -128,5 +127,5 @@ function createTask() {
         </li>
       </ul>
     </section>
-  </main>
+  </div>
 </template>

@@ -17,9 +17,11 @@ import { Form } from '@adonisjs/inertia/vue'
             id="fullName"
             type="text"
             name="fullName"
-            :data-invalid="errors.fullName ? 'true' : undefined"
+            :aria-invalid="errors.fullName ? 'true' : undefined"
+            :aria-describedby="errors.fullName ? 'fullName-error' : undefined"
+            required
           />
-          <div v-if="errors.fullName">{{ errors.fullName }}</div>
+          <div v-if="errors.fullName" id="fullName-error" role="alert">{{ errors.fullName }}</div>
         </div>
 
         <div>
@@ -29,9 +31,11 @@ import { Form } from '@adonisjs/inertia/vue'
             type="email"
             name="email"
             autocomplete="email"
-            :data-invalid="errors.email ? 'true' : undefined"
+            :aria-invalid="errors.email ? 'true' : undefined"
+            :aria-describedby="errors.email ? 'email-error' : undefined"
+            required
           />
-          <div v-if="errors.email">{{ errors.email }}</div>
+          <div v-if="errors.email" id="email-error" role="alert">{{ errors.email }}</div>
         </div>
 
         <div>
@@ -41,9 +45,11 @@ import { Form } from '@adonisjs/inertia/vue'
             type="password"
             name="password"
             autocomplete="new-password"
-            :data-invalid="errors.password ? 'true' : undefined"
+            :aria-invalid="errors.password ? 'true' : undefined"
+            :aria-describedby="errors.password ? 'password-error' : undefined"
+            required
           />
-          <div v-if="errors.password">{{ errors.password }}</div>
+          <div v-if="errors.password" id="password-error" role="alert">{{ errors.password }}</div>
         </div>
 
         <div>
@@ -53,9 +59,15 @@ import { Form } from '@adonisjs/inertia/vue'
             type="password"
             name="passwordConfirmation"
             autocomplete="new-password"
-            :data-invalid="errors.passwordConfirmation ? 'true' : undefined"
+            :aria-invalid="errors.passwordConfirmation ? 'true' : undefined"
+            :aria-describedby="
+              errors.passwordConfirmation ? 'passwordConfirmation-error' : undefined
+            "
+            required
           />
-          <div v-if="errors.passwordConfirmation">{{ errors.passwordConfirmation }}</div>
+          <div v-if="errors.passwordConfirmation" id="passwordConfirmation-error" role="alert">
+            {{ errors.passwordConfirmation }}
+          </div>
         </div>
 
         <div>

@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [
     vue(),
     adonisjs({
-      entrypoints: ['inertia/app.ts'],
-      serverEntrypoints: ['inertia/ssr.ts'],
+      entryPoints: ['inertia/app.ts'],
+      serverEntryPoints: ['inertia/ssr.ts'],
       reload: ['resources/views/**/*.edge'],
     }),
   ],

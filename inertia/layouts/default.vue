@@ -30,8 +30,9 @@ watch(
   <header>
     <div>
       <div>
-        <Link route="home">
+        <Link route="home" aria-label="Página inicial">
           <svg
+            aria-hidden="true"
             width="66"
             height="24"
             viewBox="0 0 105 38"
@@ -46,16 +47,16 @@ watch(
         </Link>
       </div>
       <div>
-        <nav>
+        <nav aria-label="Navegação principal">
           <template v-if="page.props.user">
             <span>{{ page.props.user.initials }}</span>
             <Form route="session.destroy">
-              <button type="submit">Logout</button>
+              <button type="submit">Sair</button>
             </Form>
           </template>
           <template v-else>
-            <Link route="new_account.create">Signup</Link>
-            <Link route="session.create">Login</Link>
+            <Link route="new_account.create">Criar conta</Link>
+            <Link route="session.create">Entrar</Link>
           </template>
         </nav>
       </div>

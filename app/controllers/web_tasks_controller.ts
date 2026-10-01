@@ -7,7 +7,7 @@ export default class WebTasksController {
 
     const payload = await request.validateUsing(createTaskValidator)
 
-    await user.related('tasks').create(payload)
+    await user.related('tasks').create({ ...payload, status: 'open' })
 
     return response.redirect().toRoute('home')
   }

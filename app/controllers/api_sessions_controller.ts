@@ -1,13 +1,14 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
+import { loginValidator } from '#validators/user'
 
 export default class ApiSessionsController {
-  async store({ request, auth }: HttpContext) {
-    const { email, password } = request.only(['email', 'password'])
+  async store({ request }: HttpContext) {
+    const { email, password } = await request.validateUsing(loginValidator)
 
     const user = await User.verifyCredentials(email, password)
 
-    const token = await auth.use('api').createToken(user)
+    const token = await User.accessTokens.create(user)
 
     return {
       type: 'bearer',

@@ -1,7 +1,7 @@
 import { configApp } from '@adonisjs/eslint-config'
 import { vue } from '@adonisjs/eslint-config/vue'
 
-export default configApp(...vue, {
+export default configApp({ ignores: ['public/assets/**'] }, ...vue, {
   name: 'inertia-vue ts overrides',
   files: ['inertia/**/*.ts'],
   rules: {
