@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import User from '#models/user'
 import testUtils from '@adonisjs/core/services/test_utils'
 import env from '#start/env'
+import transmit from '@adonisjs/transmit/services/main'
 
 const baseUrl = `http://${env.get('HOST')}:${env.get('PORT')}`
 async function request(path: string, method = 'GET', body?: object, token?: string) {
@@ -24,9 +25,19 @@ async function responseStatus(...args: Parameters<typeof request>) {
 
 test.group('API and web tasks', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  const broadcasts: { channel: string; payload: unknown }[] = []
+  group.each.setup(() => {
+    broadcasts.length = 0
+    return transmit.on('broadcast', (event) => broadcasts.push(event))
+  })
   test('validates login and rejects unauthenticated access', async ({ assert }) => {
     assert.equal(await responseStatus('/api/login', 'POST', {}), 422)
     assert.equal(await responseStatus('/api/tasks'), 401)
+    assert.equal(await responseStatus('/__transmit/events?uid=anonymous'), 401)
+    assert.equal(
+      await responseStatus('/__transmit/subscribe', 'POST', { uid: 'anonymous', channel: 'tasks' }),
+      302
+    )
   })
   test('authenticates tokens, manages tasks, and isolates users', async ({ assert }) => {
     const user = await User.create({ email: 'test@example.com', password: 'password123' })
@@ -80,6 +91,13 @@ test.group('API and web tasks', (group) => {
     )
     assert.equal(((await status.json()) as { status: string }).status, 'finished')
     assert.equal(await responseStatus(`/api/tasks/${task.id}`, 'DELETE', undefined, token), 204)
+    assert.deepEqual(
+      broadcasts,
+      ['created', 'updated', 'updated', 'deleted'].map((action) => ({
+        channel: 'tasks',
+        payload: { action, taskId: task.id },
+      }))
+    )
   })
   test('serves Inertia pages and protects browser forms with CSRF', async ({ assert }) => {
     for (const path of ['/login', '/signup']) {
@@ -188,6 +206,51 @@ test.group('API and web tasks', (group) => {
     const deleted = await web(`/tasks/${task.id}`, {}, 'DELETE')
     assert.equal(deleted.status, 302)
     assert.isNull(await user.related('tasks').query().where('id', task.id).first())
+    assert.deepEqual(
+      broadcasts,
+      ['created', 'updated', 'updated', 'deleted'].map((action) => ({
+        channel: 'tasks',
+        payload: { action, taskId: task.id },
+      }))
+    )
+    const controller = new AbortController()
+    const stream = await fetch(`${baseUrl}/__transmit/events?uid=authenticated`, {
+      headers: { Cookie: [...cookies].map(([key, value]) => `${key}=${value}`).join('; ') },
+      signal: controller.signal,
+    })
+    assert.equal(stream.status, 200)
+    assert.include(stream.headers.get('content-type')!, 'text/event-stream')
+    const subscription = await web('/__transmit/subscribe', {
+      uid: 'authenticated',
+      channel: 'tasks',
+    })
+    assert.equal(subscription.status, 204)
+    const reader = stream.body!.getReader()
+    await web('/tasks', { title: 'Realtime task', description: 'SSE delivery', type: 'general' })
+    let frames = ''
+    while (!frames.includes('"action":"created"')) {
+      const chunk = await reader.read()
+      if (chunk.done) break
+      frames += new TextDecoder().decode(chunk.value)
+    }
+    assert.include(frames, '"channel":"tasks"')
+    assert.include(frames, '"action":"created"')
+    const withoutCsrf = await fetch(`${baseUrl}/__transmit/subscribe`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': [...cookies].map(([key, value]) => `${key}=${value}`).join('; '),
+      },
+      body: JSON.stringify({ uid: 'authenticated', channel: 'tasks' }),
+    })
+    assert.equal(withoutCsrf.status, 302)
+    const unsubscribe = await web('/__transmit/unsubscribe', {
+      uid: 'authenticated',
+      channel: 'tasks',
+    })
+    assert.equal(unsubscribe.status, 204)
+    controller.abort()
     const logout = await web('/logout', {})
     assert.equal(logout.headers.get('location'), '/login')
     await web('/login')

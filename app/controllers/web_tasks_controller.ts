@@ -1,3 +1,4 @@
+import { notifyTaskChanged } from '#services/task_notifications'
 import type { HttpContext } from '@adonisjs/core/http'
 import {
   createTaskValidator,
@@ -11,7 +12,8 @@ export default class WebTasksController {
 
     const payload = await request.validateUsing(createTaskValidator)
 
-    await user.related('tasks').create({ ...payload, status: 'open' })
+    const task = await user.related('tasks').create({ ...payload, status: 'open' })
+    notifyTaskChanged('created', task.id)
 
     return response.redirect().toRoute('home')
   }
@@ -24,6 +26,7 @@ export default class WebTasksController {
       .firstOrFail()
     const payload = await request.validateUsing(updateTaskValidator)
     await task.merge(payload).save()
+    notifyTaskChanged('updated', task.id)
     session.flash('success', 'Chamado atualizado com sucesso.')
     return response.redirect().toRoute('home')
   }
@@ -37,6 +40,7 @@ export default class WebTasksController {
       .firstOrFail()
     const payload = await request.validateUsing(updateTaskStatusValidator)
     await task.merge(payload).save()
+    notifyTaskChanged('updated', task.id)
     session.flash('success', 'Status atualizado com sucesso.')
     return response.redirect().toRoute('home')
   }
@@ -49,6 +53,7 @@ export default class WebTasksController {
       .where('id', params.id)
       .firstOrFail()
     await task.delete()
+    notifyTaskChanged('deleted', task.id)
     session.flash('success', 'Chamado excluído com sucesso.')
     return response.redirect().toRoute('home')
   }
