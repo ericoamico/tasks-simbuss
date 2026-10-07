@@ -10,6 +10,12 @@
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
+import transmit from '@adonisjs/transmit/services/main'
+
+transmit.authorize('tasks', (ctx) => !!ctx.auth.user)
+transmit.registerRoutes((route) => {
+  route.use(middleware.auth())
+})
 
 router.get('/', [controllers.Home, 'index']).as('home').use(middleware.auth())
 

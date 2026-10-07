@@ -1,3 +1,4 @@
+import { notifyTaskChanged } from '#services/task_notifications'
 import {
   createTaskValidator,
   updateTaskStatusValidator,
@@ -24,6 +25,7 @@ export default class TasksController {
     const payload = await request.validateUsing(createTaskValidator)
 
     const task = await user.related('tasks').create({ ...payload, status: 'open' })
+    notifyTaskChanged('created', task.id)
 
     return response.created(task)
   }
@@ -38,6 +40,7 @@ export default class TasksController {
     task.status = payload.status
 
     await task.save()
+    notifyTaskChanged('updated', task.id)
 
     return task
   }
@@ -51,6 +54,7 @@ export default class TasksController {
     task.merge(payload)
 
     await task.save()
+    notifyTaskChanged('updated', task.id)
 
     return task
   }
@@ -60,6 +64,7 @@ export default class TasksController {
     const task = await user.related('tasks').query().where('id', params.id).firstOrFail()
 
     await task.delete()
+    notifyTaskChanged('deleted', task.id)
 
     return response.noContent()
   }

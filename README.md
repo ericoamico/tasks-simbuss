@@ -63,3 +63,11 @@ npm ci --omit=dev
 ```
 
 Configure as variáveis de ambiente, incluindo uma `APP_KEY` persistente, o banco e `NODE_ENV=production`. Execute `node ace migration:run --force` e `npm start` dentro de `build`. Não publique seu `.env`.
+
+## Atualizações em tempo real
+
+O frontend assina o canal autenticado `tasks` com AdonisJS Transmit (SSE). Criação, edição, alteração de status e exclusão pelas rotas web e API enviam apenas ID e ação, depois da gravação. O navegador recarrega somente a propriedade `tasks` pelo Inertia, mantendo as permissões calculadas no servidor.
+
+Atualizações são agrupadas e adiadas enquanto houver edição, confirmação de exclusão, status não salvo ou envio em andamento. Rascunhos são preservados; mensagens curtas são anunciadas por leitores de tela. Após reconectar e assinar novamente, a lista é consultada para recuperar alterações perdidas. O botão Atualizar chamados permite uma consulta manual.
+
+Esta configuração usa um único processo de servidor. Para múltiplos processos/instâncias, configure um transporte compartilhado do Transmit (por exemplo Redis) e afinidade de sessão no balanceador para as rotas de conexão e assinatura. No proxy, desative buffering e compressão para `text/event-stream` e configure timeout superior ao heartbeat de 30 segundos. As rotas `/__transmit/*` usam sessão e mantêm proteção CSRF nos POSTs. Não há migração de banco.

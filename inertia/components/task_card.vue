@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, ref, watch, onBeforeUnmount } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 
 type Task = {
@@ -11,7 +11,7 @@ type Task = {
   canManage: boolean
 }
 const props = defineProps<{ task: Task }>()
-const emit = defineEmits<{ deleted: [] }>()
+const emit = defineEmits<{ deleted: []; busy: [value: boolean] }>()
 const types = { bug: 'Erro', suggestion: 'Sugestão', general: 'Geral' }
 const statuses = {
   open: 'Aberto',
@@ -33,10 +33,25 @@ const edit = useForm({
 })
 const status = useForm({ status: props.task.status })
 const deletion = useForm({})
+onBeforeUnmount(() => emit('busy', false))
+watch(
+  () =>
+    editing.value ||
+    confirmingDelete.value ||
+    status.isDirty ||
+    edit.processing ||
+    status.processing ||
+    deletion.processing,
+  (value) => emit('busy', value),
+  { immediate: true }
+)
 watch(
   () => props.task.status,
   (value) => {
-    status.status = value
+    if (!status.isDirty && !status.processing) {
+      status.status = value
+      status.defaults({ status: value })
+    }
   }
 )
 async function startEdit() {
@@ -70,6 +85,8 @@ function saveStatus() {
   status.patch(`/tasks/${props.task.id}/status`, {
     preserveScroll: true,
     onSuccess: () => {
+      status.defaults({ status: props.task.status })
+      status.status = props.task.status
       message.value = 'Status atualizado com sucesso.'
     },
     onError: () => {
