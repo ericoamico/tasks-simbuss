@@ -140,6 +140,26 @@ test.group('API and web tasks', (group) => {
     const foreign = await other
       .related('tasks')
       .create({ title: 'Private', description: 'Private', type: 'bug', status: 'open' })
+    const sharedHome = await web('/')
+    assert.equal(sharedHome.status, 200)
+    const html = await sharedHome.text()
+    const pageMatch = html.match(
+      /<script data-page="[^"]+" type="application\/json">([\s\S]*?)<\/script>/
+    )
+    assert.isNotNull(pageMatch)
+    const page = JSON.parse(pageMatch![1]) as {
+      props: { tasks: { id: number; canManage: boolean }[] }
+    }
+    assert.deepEqual(
+      page.props.tasks.map((item: { id: number; canManage: boolean }) => ({
+        id: item.id,
+        canManage: item.canManage,
+      })),
+      [
+        { id: foreign.id, canManage: false },
+        { id: task.id, canManage: true },
+      ]
+    )
     for (const [path, method, body] of [
       [`/tasks/${foreign.id}`, 'PATCH', { title: 'Forbidden' }],
       [`/tasks/${foreign.id}/status`, 'PATCH', { status: 'finished' }],

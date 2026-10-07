@@ -28,7 +28,7 @@ Abra http://localhost:3333/signup para criar sua conta. Para desenvolver sem Pos
 
 A página principal permite criar chamados, consultar título e descrição, editar título/descrição/tipo, alterar o status e excluir com confirmação. Os tipos e status aparecem em português. A edição recebe foco no campo título; cancelar devolve o foco ao botão, e excluir devolve o foco ao título da lista. As mensagens de resultado são anunciadas por leitores de tela.
 
-As rotas web usam sessão e CSRF e limitam as operações aos chamados do usuário autenticado.
+Usuários autenticados podem consultar todos os chamados na página principal. Os controles de edição, status e exclusão aparecem apenas nos próprios chamados; as rotas web continuam protegendo essas operações com sessão, CSRF e verificação de propriedade.
 
 ## API
 
@@ -41,7 +41,7 @@ Crie a conta pelo frontend e envie `POST /api/login` com JSON contendo `email` e
 - `PATCH /api/tasks/:id/status`: alterar para `open`, `in_progress` ou `finished`.
 - `DELETE /api/tasks/:id`: excluir.
 
-Cada usuário acessa apenas suas próprias tarefas. O frontend usa sessão e proteção CSRF; a API usa tokens.
+Na API, cada usuário acessa apenas suas próprias tarefas. O frontend lista todos os chamados e usa sessão e proteção CSRF; a API usa tokens.
 
 ## Verificação
 

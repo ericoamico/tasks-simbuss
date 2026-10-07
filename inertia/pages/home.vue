@@ -9,6 +9,7 @@ type Task = {
   description: string
   type: 'bug' | 'suggestion' | 'general'
   status: 'open' | 'in_progress' | 'finished' | 'closed'
+  canManage: boolean
 }
 
 defineProps<{
@@ -113,7 +114,8 @@ function createTask() {
     </section>
 
     <section aria-labelledby="tasks-title">
-      <h2 id="tasks-title" ref="listHeading" tabindex="-1">Meus chamados</h2>
+      <h2 id="tasks-title" ref="listHeading" tabindex="-1">Todos os chamados</h2>
+      <p>Você pode consultar todos os chamados e gerenciar apenas os seus.</p>
 
       <p v-if="tasks.length === 0">Nenhuma tarefa cadastrada.</p>
 
