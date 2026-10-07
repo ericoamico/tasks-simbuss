@@ -8,6 +8,7 @@ type Task = {
   description: string
   type: 'bug' | 'suggestion' | 'general'
   status: 'open' | 'in_progress' | 'finished' | 'closed'
+  canManage: boolean
 }
 const props = defineProps<{ task: Task }>()
 const emit = defineEmits<{ deleted: [] }>()
@@ -113,7 +114,12 @@ function destroy() {
     </dl>
     <p role="status" aria-live="polite">{{ message }}</p>
 
-    <form v-if="editing" :aria-label="`Editar chamado: ${task.title}`" @submit.prevent="save">
+    <p v-if="!task.canManage">Chamado de outro usuário. Disponível apenas para consulta.</p>
+    <form
+      v-if="task.canManage && editing"
+      :aria-label="`Editar chamado: ${task.title}`"
+      @submit.prevent="save"
+    >
       <div>
         <label :for="`edit-title-${task.id}`">Título</label>
         <input
@@ -169,7 +175,7 @@ function destroy() {
         </button>
       </div>
     </form>
-    <template v-else>
+    <template v-else-if="task.canManage">
       <form :aria-label="`Alterar status: ${task.title}`" @submit.prevent="saveStatus">
         <div>
           <label :for="`status-${task.id}`">Status de {{ task.title }}</label>
@@ -226,7 +232,7 @@ function destroy() {
       </div>
     </template>
     <section
-      v-if="confirmingDelete"
+      v-if="task.canManage && confirmingDelete"
       :aria-labelledby="`delete-heading-${task.id}`"
       @keydown.esc="cancelDelete"
     >
