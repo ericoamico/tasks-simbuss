@@ -34,14 +34,14 @@ Usuários autenticados podem consultar todos os chamados na página principal. O
 
 Crie a conta pelo frontend e envie `POST /api/login` com JSON contendo `email` e `password`. Use o `token` retornado no cabeçalho `Authorization: Bearer TOKEN` e `Accept: application/json` nas demais chamadas:
 
-- `GET /api/tasks`: listar suas tarefas.
+- `GET /api/tasks`: listar todos os chamados, com `canManage` indicando se o usuário pode alterá-los.
 - `POST /api/tasks`: criar com `title`, `description` e `type` (`bug`, `suggestion` ou `general`).
 - `GET /api/tasks/:id`: consultar.
 - `PATCH /api/tasks/:id`: editar título, descrição ou tipo.
 - `PATCH /api/tasks/:id/status`: alterar para `open`, `in_progress` ou `finished`.
 - `DELETE /api/tasks/:id`: excluir.
 
-Na API, cada usuário acessa apenas suas próprias tarefas. O frontend lista todos os chamados e usa sessão e proteção CSRF; a API usa tokens.
+Os dois clientes consultam todos os chamados e só podem editar, alterar o status ou excluir os próprios. O serviço `TaskService` centraliza consultas, criação e gerenciamento, e ambos os controllers usam os mesmos validators. O frontend usa sessão e proteção CSRF; a API usa tokens. Chamados criados ou alterados em qualquer cliente ficam disponíveis no outro na próxima consulta.
 
 ## Verificação
 
