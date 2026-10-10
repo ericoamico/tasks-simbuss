@@ -1,11 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import Task from '#models/task'
+import TaskService from '#services/task_service'
 
 export default class HomeController {
   async index({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    const tasks = await Task.query().orderBy('created_at', 'desc').orderBy('id', 'desc')
+    const tasks = await TaskService.list()
 
     return inertia.render('home', {
       tasks: tasks.map((task) => ({
@@ -14,7 +14,7 @@ export default class HomeController {
         description: task.description,
         type: task.type,
         status: task.status,
-        canManage: task.userId === user.id,
+        canManage: TaskService.canManage(task, user),
       })),
     })
   }

@@ -28,7 +28,7 @@ test.group('API and web tasks', (group) => {
     assert.equal(await responseStatus('/api/login', 'POST', {}), 422)
     assert.equal(await responseStatus('/api/tasks'), 401)
   })
-  test('authenticates tokens, manages tasks, and isolates users', async ({ assert }) => {
+  test('lists shared tasks and restricts management to the owner', async ({ assert }) => {
     const user = await User.create({ email: 'test@example.com', password: 'password123' })
     const other = await User.create({ email: 'other@example.com', password: 'password123' })
     const foreign = await other
@@ -53,9 +53,12 @@ test.group('API and web tasks', (group) => {
     const list = await request('/api/tasks', 'GET', undefined, token)
     assert.deepEqual(
       ((await list.json()) as { id: number }[]).map((item) => item.id),
-      [task.id]
+      [task.id, foreign.id]
     )
-    for (const method of ['GET', 'PATCH', 'DELETE']) {
+    const shared = await request(`/api/tasks/${foreign.id}`, 'GET', undefined, token)
+    assert.equal(shared.status, 200)
+    assert.isFalse(((await shared.json()) as { canManage: boolean }).canManage)
+    for (const method of ['PATCH', 'DELETE']) {
       assert.equal(
         await responseStatus(
           `/api/tasks/${foreign.id}`,
@@ -66,6 +69,15 @@ test.group('API and web tasks', (group) => {
         404
       )
     }
+    assert.equal(
+      await responseStatus(
+        `/api/tasks/${foreign.id}/status`,
+        'PATCH',
+        { status: 'finished' },
+        token
+      ),
+      404
+    )
     assert.equal(
       await responseStatus(`/api/tasks/${task.id}/status`, 'PATCH', { status: 'invalid' }, token),
       422
@@ -132,9 +144,36 @@ test.group('API and web tasks', (group) => {
     const user = await User.findByOrFail('email', 'web@example.com')
     const task = await user.related('tasks').query().firstOrFail()
     assert.equal(task.status, 'open')
+    const accessToken = await User.accessTokens.create(user)
+    const token = accessToken.value!.release()
+    const apiTask = await request(`/api/tasks/${task.id}`, 'GET', undefined, token)
+    assert.equal(apiTask.status, 200)
+    assert.equal(((await apiTask.json()) as { title: string }).title, 'Browser task')
+    const apiUpdated = await request(
+      `/api/tasks/${task.id}`,
+      'PATCH',
+      { description: 'Updated from API' },
+      token
+    )
+    assert.equal(apiUpdated.status, 200)
+    const apiCreated = await request(
+      '/api/tasks',
+      'POST',
+      {
+        title: 'API task',
+        description: 'Shared clients',
+        type: 'general',
+      },
+      token
+    )
+    assert.equal(apiCreated.status, 201)
+    const createdViaApi = (await apiCreated.json()) as { id: number }
     const home = await web('/')
     assert.equal(home.status, 200)
-    assert.include(await home.text(), 'Browser task')
+    const homeHtml = await home.text()
+    assert.include(homeHtml, 'Browser task')
+    assert.include(homeHtml, 'Updated from API')
+    assert.include(homeHtml, 'API task')
 
     const other = await User.create({ email: 'foreign-web@example.com', password: 'password123' })
     const foreign = await other
@@ -157,6 +196,7 @@ test.group('API and web tasks', (group) => {
       })),
       [
         { id: foreign.id, canManage: false },
+        { id: createdViaApi.id, canManage: true },
         { id: task.id, canManage: true },
       ]
     )
@@ -177,6 +217,8 @@ test.group('API and web tasks', (group) => {
     await task.refresh()
     assert.equal(task.title, 'Updated web task')
     assert.equal(task.type, 'suggestion')
+    const afterWebUpdate = await request(`/api/tasks/${task.id}`, 'GET', undefined, token)
+    assert.equal(((await afterWebUpdate.json()) as { title: string }).title, 'Updated web task')
     const invalidStatus = await web(`/tasks/${task.id}/status`, { status: 'invalid' }, 'PATCH')
     assert.equal(invalidStatus.status, 302)
     await task.refresh()
@@ -188,6 +230,7 @@ test.group('API and web tasks', (group) => {
     const deleted = await web(`/tasks/${task.id}`, {}, 'DELETE')
     assert.equal(deleted.status, 302)
     assert.isNull(await user.related('tasks').query().where('id', task.id).first())
+    assert.equal(await responseStatus(`/api/tasks/${task.id}`, 'GET', undefined, token), 404)
     const logout = await web('/logout', {})
     assert.equal(logout.headers.get('location'), '/login')
     await web('/login')

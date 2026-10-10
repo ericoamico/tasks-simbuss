@@ -4,63 +4,46 @@ import {
   updateTaskValidator,
 } from '#validators/task'
 import { type HttpContext } from '@adonisjs/core/http'
+import TaskService from '#services/task_service'
 
 export default class TasksController {
   async index({ auth }: HttpContext) {
     const user = auth.use('api').getUserOrFail()
-
-    return user.related('tasks').query()
+    const tasks = await TaskService.list()
+    return tasks.map((task) => ({
+      ...task.serialize(),
+      canManage: TaskService.canManage(task, user),
+    }))
   }
 
   async show({ params, auth }: HttpContext) {
     const user = auth.use('api').getUserOrFail()
-
-    return user.related('tasks').query().where('id', params.id).firstOrFail()
+    const task = await TaskService.find(params.id)
+    return { ...task.serialize(), canManage: TaskService.canManage(task, user) }
   }
 
   async store({ request, auth, response }: HttpContext) {
     const user = auth.use('api').getUserOrFail()
-
     const payload = await request.validateUsing(createTaskValidator)
-
-    const task = await user.related('tasks').create({ ...payload, status: 'open' })
-
+    const task = await TaskService.create(user, payload)
     return response.created(task)
   }
 
   async updateStatus({ params, request, auth }: HttpContext) {
     const user = auth.use('api').getUserOrFail()
-
     const payload = await request.validateUsing(updateTaskStatusValidator)
-
-    const task = await user.related('tasks').query().where('id', params.id).firstOrFail()
-
-    task.status = payload.status
-
-    await task.save()
-
-    return task
+    return TaskService.updateStatus(user, params.id, payload)
   }
 
   async update({ params, request, auth }: HttpContext) {
     const user = auth.use('api').getUserOrFail()
     const payload = await request.validateUsing(updateTaskValidator)
-
-    const task = await user.related('tasks').query().where('id', params.id).firstOrFail()
-
-    task.merge(payload)
-
-    await task.save()
-
-    return task
+    return TaskService.update(user, params.id, payload)
   }
+
   async destroy({ params, auth, response }: HttpContext) {
     const user = auth.use('api').getUserOrFail()
-
-    const task = await user.related('tasks').query().where('id', params.id).firstOrFail()
-
-    await task.delete()
-
+    await TaskService.destroy(user, params.id)
     return response.noContent()
   }
 }
